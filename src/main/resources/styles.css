@@ -1,0 +1,14 @@
+.root {
+    -fx-font-family: "Segoe UI", "Arial";
+}
+
+.cell {
+    -fx-border-color: #333333;
+    -fx-border-width: 1;
+    -fx-alignment: center;
+    -fx-background-color: #f0f0f0;
+}
+
+.cell-empty {
+    -fx-background-color: #f9f9f9;
+}

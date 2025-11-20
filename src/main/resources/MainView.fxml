@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:controller="com.brovdij.exploding_atoms.presentation.MainController"
+            xmlns:fx="http://javafx.com/fxml">
+    <top>
+        <ToolBar>
+            <Label text="Exploding Atoms" style="-fx-font-weight:bold; -fx-font-size:14px;"/>
+            <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnReset" text="Reset" />
+        </ToolBar>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+            <GridPane fx:id="gridPane" hgap="2" vgap="2">
+                <padding>
+                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                </padding>
+            </GridPane>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/>
+            </padding>
+            <Label fx:id="statusLabel" text="Na tahu: hráč 1" />
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="infoLabel" text="Klikni na buňku pro přidání atomu" />
+        </HBox>
+    </bottom>
+</BorderPane>
