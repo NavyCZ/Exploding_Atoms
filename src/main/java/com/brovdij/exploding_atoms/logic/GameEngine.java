@@ -6,13 +6,24 @@ import com.brovdij.exploding_atoms.data.Player;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
 
 public class GameEngine {
+
     private final Grid grid;
     private final Player[] players;
     private int currentPlayerIndex = 0;
     private boolean gameOver = false;
     private int movesMade = 0;
+
+    // Last move
+    private int lastMoveX = -1;
+    private int lastMoveY = -1;
+    private final Random random = new Random();
 
     public GameEngine(Grid grid, Player... players) {
         this.grid = grid;
@@ -23,10 +34,10 @@ public class GameEngine {
     public Player getCurrentPlayer() { return players[currentPlayerIndex]; }
     public boolean isGameOver() { return gameOver; }
 
-    public void nextPlayer() {
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-    }
+    public int getLastMoveX() { return lastMoveX; }
+    public int getLastMoveY() { return lastMoveY; }
 
+    //hráč
     public boolean makeMove(int x, int y) {
         if (gameOver) return false;
 
@@ -36,18 +47,50 @@ public class GameEngine {
         Player current = getCurrentPlayer();
 
         if (cell.getOwner() == null || cell.getOwner().equals(current)) {
+            lastMoveX = x;
+            lastMoveY = y;
+
             cell.addAtom(current);
             processExplosions();
             movesMade++;
             evaluateGameOver();
-            if (!gameOver) nextPlayer();
+
+            if (!gameOver)
+                nextPlayer();
+
             return true;
         } else {
             return false;
         }
     }
 
-    //EXPLOOOOOOOOOSION!
+
+    //BOT
+    public boolean makeAiMove() {
+        if (gameOver) return false;
+
+        Player ai = getCurrentPlayer();
+
+
+        List<int[]> valid = new ArrayList<>();
+        for (int y = 0; y < grid.getHeight(); y++) {
+            for (int x = 0; x < grid.getWidth(); x++) {
+                Cell c = grid.getCell(x, y);
+                if (c.getOwner() == null || c.getOwner().equals(ai)) {
+                    valid.add(new int[]{x, y});
+                }
+            }
+        }
+
+        if (valid.isEmpty()) return false;
+
+        int[] selected = valid.get(random.nextInt(valid.size()));
+
+        return makeMove(selected[0], selected[1]);
+    }
+    //______________
+    //EXPLOOOOOSION!
+    //______________
     private void processExplosions() {
         Queue<Cell> q = new ArrayDeque<>();
 
@@ -68,16 +111,18 @@ public class GameEngine {
             if (c.getAtomCount() <= threshold(x, y)) continue;
 
             Player owner = c.getOwner();
-
             c.reset();
 
             int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+
             for (int[] d : dirs) {
                 int nx = x + d[0];
                 int ny = y + d[1];
                 Cell n = grid.getCell(nx, ny);
                 if (n == null) continue;
+
                 n.addAtom(owner);
+
                 if (n.getAtomCount() > threshold(nx, ny)) {
                     q.add(n);
                 }
@@ -96,40 +141,37 @@ public class GameEngine {
     }
 
     private int threshold(int x, int y) {
-        return neighborCount(x, y)-1;
+        return neighborCount(x, y) - 1;
     }
 
     private void evaluateGameOver() {
-        if (movesMade < 2) { // instagame end prevent
-            gameOver = false;
-            return;
-        }
+        if (movesMade < 2) return;
 
         boolean[] has = new boolean[players.length];
         int totalOwners = 0;
+
         for (int y = 0; y < grid.getHeight(); y++) {
             for (int x = 0; x < grid.getWidth(); x++) {
                 Cell c = grid.getCell(x, y);
                 if (c.getOwner() != null) {
                     for (int i = 0; i < players.length; i++) {
-                        if (players[i].equals(c.getOwner())) {
-                            if (!has[i]) {
-                                has[i] = true;
-                                totalOwners++;
-                            }
+                        if (players[i].equals(c.getOwner()) && !has[i]) {
+                            has[i] = true;
+                            totalOwners++;
                         }
                     }
                 }
             }
         }
 
-        if (totalOwners <= 1) {
+        if (totalOwners <= 1)
             gameOver = true;
-        }
     }
+
 
     public Player getWinner() {
         if (!gameOver) return null;
+
         for (Player p : players) {
             for (int y = 0; y < grid.getHeight(); y++) {
                 for (int x = 0; x < grid.getWidth(); x++) {
@@ -142,5 +184,8 @@ public class GameEngine {
         }
         return null;
     }
-}
 
+    private void nextPlayer() {
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    }
+}
